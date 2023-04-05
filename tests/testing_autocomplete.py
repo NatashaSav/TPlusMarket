@@ -6,7 +6,7 @@ INNER_URL = 'api/product/autocomplete'
 class TestingAutocomplete:
 
     @staticmethod
-    def test_check_status_of_main_page(before_all_fixture, base_url):
+    def test_check_status_of_main_page(base_url):
         response = requests.get(url=base_url, verify=False)
         expected_status_code = 200
         assert response.status_code == expected_status_code, f"expected status code is {expected_status_code}, " \
