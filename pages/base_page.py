@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 
 
 class BasePage:
@@ -9,3 +11,12 @@ class BasePage:
         response = before_all_fixture.get(url=my_url, params=params)
         items_data = response.json()["items"]
         return items_data
+
+    @staticmethod
+    def get_json_file():
+        file = "large-file.json"
+        BASE_DIR = Path(__file__).absolute().parent.parent
+        json_file = f'{BASE_DIR}/{file}'
+        with open(json_file) as config_file:
+            data = json.load(config_file)
+        return data
