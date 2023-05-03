@@ -82,6 +82,13 @@
                        "modelIds[2]": "",
                        "limit": 24,
                        "page": 1,
-                       "receipt": "false"}
+                       "receipt": "false"},
+    "filterByCategory":
+                      { "search": "",
+                        "favorite": "false",
+                        "categoryId": "",
+                        "limit": 24,
+                        "page": 1,
+                        "receipt": "false"}
   }
 }

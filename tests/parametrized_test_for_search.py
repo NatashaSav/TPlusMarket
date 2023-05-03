@@ -1,6 +1,7 @@
 import pytest
 
 from pages.base_page import BasePage
+from pages.search_page import SearchPage
 
 INNER_URL = "api/product/search"
 
@@ -16,9 +17,7 @@ class TestParametrizedAutocomplete:
                                                ('освіжувач повітря Baseus')])
     def test_search_phrases(before_all_fixture, search_phrase, base_url):
         items_data = BasePage.get_all_items_from_response(base_url, INNER_URL, search_phrase, before_all_fixture)
-        for item in items_data:
-            item_name = item["name"]
-            assert search_phrase in item_name, f"expected to see {search_phrase} in {item_name}"
+        return filter(SearchPage.get_item_name, items_data)
 
     @staticmethod
     @pytest.mark.parametrize("search_phrase, expected_items_count", [('bor49853fj', 0),
@@ -59,9 +58,7 @@ class TestParametrizedAutocomplete:
                              ('Жало 900M-T-5C усічений циліндр, 5мм')])
     def test_phrase_recognition_by_the_full_sentences_with_color_name(before_all_fixture, search_phrase, base_url):
         items_data = BasePage.get_all_items_from_response(base_url, INNER_URL, search_phrase, before_all_fixture)
-        for item in items_data:
-            item_name = item["products"][0]["name"]
-            assert search_phrase == item_name, f"expected to see {search_phrase}, but received {item_name}"
+        return filter(SearchPage.get_products_name, items_data)
 
     @staticmethod
     @pytest.mark.parametrize("abbreviation, expected_phrase",
@@ -85,9 +82,7 @@ class TestParametrizedAutocomplete:
                             ('00-00100331', 'IC Light control ELC180 (TPS62180) (Original)')])
     def test_phrase_recognition_by_article_name(before_all_fixture, article_name, full_phrase, base_url):
         items_data = BasePage.get_all_items_from_response(base_url, INNER_URL, article_name, before_all_fixture)
-        for item in items_data:
-            item_name = item["name"]
-            assert full_phrase in item_name, f"expected to see {full_phrase} in actual phrase {item_name}"
+        return filter(SearchPage.get_item_name, items_data)
 
     @staticmethod
     @pytest.mark.parametrize("model_name", [('Чохол Cover Samsung Galaxy'),
@@ -102,12 +97,7 @@ class TestParametrizedAutocomplete:
         general_prices_list = []
         response = before_all_fixture.get(url=my_url, params=payload)
         items_data = response.json()["items"]
-        for item in items_data:
-            product_price = item["products"][0]["prices"][0]['price']
-            general_prices_list.append(product_price)
-        expected_filtered_prices = sorted(general_prices_list)
-        assert general_prices_list == expected_filtered_prices,\
-            f"expected to see {expected_filtered_prices} but received {general_prices_list}"
+        return filter(SearchPage.get_sorted_list(items_data, general_prices_list, bool_value=False), items_data)
 
     @staticmethod
     @pytest.mark.parametrize("model_name", [('Чохол Cover Samsung Galaxy S10'),
@@ -122,12 +112,7 @@ class TestParametrizedAutocomplete:
         general_prices_list = []
         response = before_all_fixture.get(url=my_url, params=payload)
         items_data = response.json()["items"]
-        for item in items_data:
-            product_price = item["products"][0]["prices"][0]['price']
-            general_prices_list.append(product_price)
-        expected_filtered_prices = sorted(general_prices_list, reverse=True)
-        assert general_prices_list == expected_filtered_prices,\
-            f"expected to see {expected_filtered_prices} but received {general_prices_list}"
+        return filter(SearchPage.get_sorted_list(items_data, general_prices_list, bool_value=True), items_data)
 
     @staticmethod
     @pytest.mark.parametrize("model_name", [('Samsung Galaxy red'),
@@ -142,11 +127,7 @@ class TestParametrizedAutocomplete:
         payload['search'] = model_name
         response = before_all_fixture.get(url=my_url, params=payload)
         items_data = response.json()["items"]
-        for item in items_data:
-            product_name = item["products"][0]["name"]
-            separeted_items = model_name.split(' ')
-            assert (separeted_items[0] and separeted_items[1] and separeted_items[2]) in product_name, \
-                f"expected to see {model_name} in phrase, but received another set of words"
+        return filter(SearchPage.get_separated_items_of_text, items_data)
 
     @staticmethod
     @pytest.mark.parametrize("model_name, brand_name, expected_result", [('17', '2680', 'Apple Watch 38mm'),
@@ -154,7 +135,7 @@ class TestParametrizedAutocomplete:
                                                                          ('178', '296', 'A730 Galaxy A8 Plus'),
                                                                          ('178', '231', 'A500 Galaxy A5')])
     def test_product_filter_by_brand_and_model_name(before_all_fixture, model_name, brand_name, expected_result,
-                                                     base_url):
+                                                    base_url):
         my_url = f"{base_url}/{INNER_URL}"
         search_phrase = 'Захисне скло'
         json_data = BasePage.get_json_file()
@@ -164,10 +145,10 @@ class TestParametrizedAutocomplete:
         payload['modelIds[0]'] = brand_name
         response = before_all_fixture.get(url=my_url, params=payload)
         items_data = response.json()["items"]
-        for item in items_data:
-            product_name = item["products"][0]["name"]
+        product_name_list = [item["products"][0]["name"] for item in items_data]
+        for product_name in product_name_list:
             assert (search_phrase and expected_result) in product_name, \
-                f"expected to see {search_phrase} and {expected_result} in phrase, but received {product_name}"
+                   f"expected to see {search_phrase} and {expected_result} in phrase, but received {product_name}"
 
     @staticmethod
     @pytest.mark.parametrize("first_brand_id, first_brand_name, second_brand_id, second_brand_name",
@@ -184,8 +165,8 @@ class TestParametrizedAutocomplete:
         payload['brandIds[1]'] = second_brand_id
         response = before_all_fixture.get(url=my_url, params=payload)
         items_data = response.json()["items"]
-        for item in items_data:
-            product_name = item["products"][0]["name"]
+        product_name_list = [item["products"][0]["name"] for item in items_data]
+        for product_name in product_name_list:
             assert (search_phrase and first_brand_name) or \
                    (search_phrase and second_brand_name) in product_name, \
                    f"expected to see {search_phrase} in phrase, but received {product_name}"
@@ -210,8 +191,8 @@ class TestParametrizedAutocomplete:
         payload['modelIds[1]'] = second_model_id
         response = before_all_fixture.get(url=my_url, params=payload)
         items_data = response.json()["items"]
-        for item in items_data:
-            product_name = item["products"][0]["name"]
+        product_name_list = [item["products"][0]["name"] for item in items_data]
+        for product_name in product_name_list:
             assert (search_phrase and first_brand_name and first_model_name) or \
                    (search_phrase and second_brand_name and second_model_name) in product_name, \
                    f"expected to see {search_phrase} in phrase, but received {product_name}"
@@ -232,12 +213,7 @@ class TestParametrizedAutocomplete:
         payload['brandIds[2]'] = third_brand_id
         response = before_all_fixture.get(url=my_url, params=payload)
         items_data = response.json()["items"]
-        for item in items_data:
-            product_name = item["products"][0]["name"]
-            assert (search_phrase and first_brand_name) or \
-                   (search_phrase and second_brand_name) or \
-                   (search_phrase and third_brand_name) in product_name, \
-                   f"expected to see {search_phrase} in phrase, but received {product_name}"
+        return filter(SearchPage.get_products_filtered_by_brands, items_data)
 
     @staticmethod
     @pytest.mark.parametrize("first_brand_id, first_brand_name, first_model_id, first_model_name, \
@@ -264,16 +240,26 @@ class TestParametrizedAutocomplete:
         payload['modelIds[2]'] = third_model_id
         response = before_all_fixture.get(url=my_url, params=payload)
         items_data = response.json()["items"]
-        for item in items_data:
-            product_name = item["products"][0]["name"]
-            assert (search_phrase and first_brand_name and first_model_name) or \
-                   (search_phrase and second_brand_name and second_model_name) or \
-                   (search_phrase and third_brand_name and third_model_name) in product_name, \
-                   f"expected to see {search_phrase} in phrase, but received {product_name}"
+        return filter(SearchPage.get_products_filtered_by_brands_and_models, items_data)
 
-
-
-
-
-
-
+    @staticmethod
+    @pytest.mark.parametrize("search_phrase, category_id",
+                             [('Комплект бічних кнопок корпусу', '757'),
+                              ('Автомобільний органайзер', '13'),
+                              ('Струмопровідний лак', '9'),
+                              ('2D Трафарет QianLi Black', '10'),
+                              ('Захисна TPU плівка іЗі', '13'),
+                              ('Мікросхема Realtek', '213'),
+                              ('Автотримач Baseus Smart', '753'),
+                              ('Заміна підсвітки', '188'),
+                              ('Battery GP Lithium', '328'),
+                              ('BGA кульки', '160')])
+    def test_product_filter_by_category(before_all_fixture, category_id, search_phrase, base_url):
+        my_url = f"{base_url}/{INNER_URL}"
+        json_data = BasePage.get_json_file()
+        payload = json_data['PAYLOADS_DATA']['filterByCategory']
+        payload['search'] = search_phrase
+        payload['categoryId'] = category_id
+        response = before_all_fixture.get(url=my_url, params=payload)
+        items_data = response.json()["items"]
+        return filter(SearchPage.get_products_filtered_by_category, items_data)
