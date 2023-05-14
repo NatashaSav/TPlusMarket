@@ -89,6 +89,17 @@
                         "categoryId": "",
                         "limit": 24,
                         "page": 1,
-                        "receipt": "false"}
+                        "receipt": "false"},
+
+    "user_registration": {"agreements": true,
+                          "cityUuid":"",
+                          "email":"",
+                          "firstName":"",
+                          "language":"uk",
+                          "lastName":"",
+                          "password":"",
+                          "phone":"",
+                          "surname":"",
+                          "verifyCode":null}
   }
 }
