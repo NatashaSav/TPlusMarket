@@ -99,7 +99,9 @@
                           "lastName":"",
                           "password":"",
                           "phone":"",
-                          "surname":"",
-                          "verifyCode":null}
+                          "surname":""},
+
+    "user_login":     { "email": "",
+                        "password": ""}
   }
 }
