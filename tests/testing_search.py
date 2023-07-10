@@ -9,6 +9,7 @@ class TestingSearch:
 
     @staticmethod
     @pytest.mark.xfail(reason="known bug")
+    @pytest.mark.search_field
     def test_sending_empty_string_to_search(before_all_fixture, base_url):
         search_phrase = ' '
         items_data = BasePage.get_all_items_from_response(base_url, INNER_URL, search_phrase, before_all_fixture)
@@ -16,6 +17,7 @@ class TestingSearch:
                                      f"actual items count is {items_data}"
 
     @staticmethod
+    @pytest.mark.search_field
     def test_product_filter_by_brand_apple(before_all_fixture, base_url):
         my_url = f"{base_url}/{INNER_URL}"
         search_phrase = 'Захисне скло'
@@ -34,6 +36,7 @@ class TestingSearch:
                    f"expected to see {search_phrase} in phrase, but received {product_name}"
 
     @staticmethod
+    @pytest.mark.search_field
     def test_product_filter_by_brand_samsung(before_all_fixture, base_url):
         my_url = f"{base_url}/{INNER_URL}"
         search_phrase = 'Захисне скло'

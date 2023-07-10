@@ -15,9 +15,11 @@ class TestParametrizedSearch:
                                                ('Автомобільний освіжувач повітря Baseus Fabric Artifact Car Fragrance'),
                                                ('Baseus Fabric Artifact Car Fragrance'),
                                                ('освіжувач повітря Baseus')])
+    @pytest.mark.search_field
     def test_search_phrases(before_all_fixture, search_phrase, base_url):
         items_data = BasePage.get_all_items_from_response(base_url, INNER_URL, search_phrase, before_all_fixture)
-        assert all(list(filter(lambda item: item["name"] == search_phrase, items_data)))
+        assert all(list(filter(lambda item: item["name"] == search_phrase, items_data))), \
+            f"item name is not equal {search_phrase}"
 
     @staticmethod
     @pytest.mark.parametrize("search_phrase, expected_items_count", [('bor49853fj', 0),
@@ -28,9 +30,11 @@ class TestParametrizedSearch:
                                                                      ('+384756', 0),
                                                                      ('-67796', 0),
                                                                      ('+098', 0)])
+    @pytest.mark.search_field
     def test_incorrect_data(before_all_fixture, search_phrase, expected_items_count, base_url):
         items_data = BasePage.get_all_items_from_response(base_url, INNER_URL, search_phrase, before_all_fixture)
-        assert all(list(filter(lambda item: len(items_data) == expected_items_count, items_data)))
+        assert all(list(filter(lambda item: len(items_data) == expected_items_count, items_data))), \
+            f"item length is not equal {expected_items_count}"
 
     @staticmethod
     @pytest.mark.parametrize("reversed_phrase",
@@ -41,11 +45,13 @@ class TestParametrizedSearch:
                               ('Watch 38mm Apple'),
                               ('Plus A730 Galaxy'),
                               ('скло Galaxy Захисне')])
+    @pytest.mark.search_field
     def test_reversed_words(before_all_fixture, reversed_phrase, base_url):
         items_data = BasePage.get_all_items_from_response(base_url, INNER_URL, reversed_phrase, before_all_fixture)
         reversed_item = reversed_phrase.split(' ')
         assert all(list(filter(lambda item: (reversed_item[0] and reversed_item[1] and reversed_item[2]) in
-                                             items_data[0]['name'], items_data)))
+                                            items_data[0]['name'], items_data))), \
+            f"{reversed_item[0]} or {reversed_item[1]} or {reversed_item[2]} is not in {items_data[0]['name']}"
 
     @staticmethod
     @pytest.mark.parametrize("search_phrase",
@@ -54,9 +60,11 @@ class TestParametrizedSearch:
                               ('Camera glass Apple iPhone 11 Pro with frame gold (Original)'),
                               ('Charge connector Asus Z500M ZenPad 3S (Type-C)'),
                               ('Жало 900M-T-5C усічений циліндр, 5мм')])
+    @pytest.mark.search_field
     def test_phrase_recognition_by_the_full_sentences_with_color_name(before_all_fixture, search_phrase, base_url):
         items_data = BasePage.get_all_items_from_response(base_url, INNER_URL, search_phrase, before_all_fixture)
-        assert all(list(filter(lambda item: item["products"][0]["name"] == search_phrase, items_data)))
+        assert all(list(filter(lambda item: item["products"][0]["name"] == search_phrase, items_data))), \
+            f"product name is not in {search_phrase}"
 
     @staticmethod
     @pytest.mark.parametrize("abbreviation, expected_phrase",
@@ -67,9 +75,11 @@ class TestParametrizedSearch:
                               ('US H ad Ba Ha 5 in 1', 'USB HUB adapter Baseus Harmonica 5 in 1'),
                               ('D D HD 2TB Bl', 'Жорсткий диск 2.5 HDD ADATA USB 3.2 Gen.'
                                                 ' 1 DashDrive Durable HD680 2TB Black')])
+    @pytest.mark.search_field
     def test_phrase_recognition_by_abbreviation_words(before_all_fixture, abbreviation, expected_phrase, base_url):
         items_data = BasePage.get_all_items_from_response(base_url, INNER_URL, abbreviation, before_all_fixture)
-        assert all(list(filter(lambda item: items_data[0]['name'] == expected_phrase, items_data)))
+        assert all(list(filter(lambda item: items_data[0]['name'] == expected_phrase, items_data))), \
+            f"{items_data[0]['name']} is not equal {expected_phrase}"
 
     @staticmethod
     @pytest.mark.parametrize("article_name, full_phrase", [
@@ -77,15 +87,18 @@ class TestParametrizedSearch:
         ('00-00091512', 'Press-button Home Huawei MediaPad M5 Lite 10 black'),
         ('00-00013899', 'IC CPU MSM8916 5VV'),
         ('00-00100331', 'IC Light control ELC180 (TPS62180) (Original)')])
+    @pytest.mark.search_field
     def test_phrase_recognition_by_article_name(before_all_fixture, article_name, full_phrase, base_url):
         items_data = BasePage.get_all_items_from_response(base_url, INNER_URL, article_name, before_all_fixture)
-        assert all(list(filter(lambda item: item["name"] == full_phrase, items_data)))
+        assert all(list(filter(lambda item: item["name"] == full_phrase, items_data))), \
+            f"item name is not equal {full_phrase}"
 
     @staticmethod
     @pytest.mark.parametrize("model_name", [('Чохол Cover Samsung Galaxy'),
                                             ('Набір металевих пластин для Apple iPhone 13'),
                                             ('Верхня панель кришки Google Pixel'),
                                             ('Charge connector DC')])
+    @pytest.mark.search_field
     def test_product_filtering_from_cheaper_to_more_expensive(before_all_fixture, model_name, base_url):
         my_url = f"{base_url}/{INNER_URL}"
         json_data = BasePage.get_json_file()
@@ -94,13 +107,15 @@ class TestParametrizedSearch:
         general_prices_list = []
         response = before_all_fixture.get(url=my_url, params=payload)
         items_data = response.json()["items"]
-        assert SearchPage.get_sorted_list(items_data, general_prices_list, bool_value=False) == general_prices_list
+        assert SearchPage.get_sorted_list(items_data, general_prices_list, bool_value=False) == general_prices_list, \
+            f"sorted list is not equal {general_prices_list}"
 
     @staticmethod
     @pytest.mark.parametrize("model_name", [('Чохол Cover Samsung Galaxy S10'),
                                             ('Hands free connector Huawei'),
                                             ('Flat cable універсальний'),
                                             ('Battery Prime iPad')])
+    @pytest.mark.search_field
     def test_product_filtering_from_more_expensive_to_cheaper(before_all_fixture, model_name, base_url):
         my_url = f"{base_url}/{INNER_URL}"
         json_data = BasePage.get_json_file()
@@ -109,7 +124,8 @@ class TestParametrizedSearch:
         general_prices_list = []
         response = before_all_fixture.get(url=my_url, params=payload)
         items_data = response.json()["items"]
-        assert SearchPage.get_sorted_list(items_data, general_prices_list, bool_value=True) == general_prices_list
+        assert SearchPage.get_sorted_list(items_data, general_prices_list, bool_value=True) == general_prices_list, \
+            f"sorted list is not equal {general_prices_list}"
 
     @staticmethod
     @pytest.mark.parametrize("model_name", [('Samsung Galaxy red'),
@@ -117,6 +133,7 @@ class TestParametrizedSearch:
                                             ('Захисна плівка Realme'),
                                             ('Набір гвинтів iPhone'),
                                             ('Клей Mechanic червоний')])
+    @pytest.mark.search_field
     def test_best_phrase_coincidence(before_all_fixture, model_name, base_url):
         my_url = f"{base_url}/{INNER_URL}"
         json_data = BasePage.get_json_file()
@@ -133,6 +150,7 @@ class TestParametrizedSearch:
                                                                          ('17', '851', 'iPhone 14 Plus'),
                                                                          ('178', '296', 'A730 Galaxy A8 Plus'),
                                                                          ('178', '231', 'A500 Galaxy A5')])
+    @pytest.mark.search_field
     def test_product_filter_by_brand_and_model_name(before_all_fixture, model_name, brand_name, expected_result,
                                                     base_url):
         my_url = f"{base_url}/{INNER_URL}"
@@ -145,12 +163,13 @@ class TestParametrizedSearch:
         response = before_all_fixture.get(url=my_url, params=payload)
         items_data = response.json()["items"]
         assert all(list(filter(lambda item: (search_phrase and expected_result) in item["products"][0]["name"],
-                               items_data)))
+                               items_data))), f"{search_phrase} and {expected_result} are not in product name"
 
     @staticmethod
     @pytest.mark.parametrize("first_brand_id, first_brand_name, second_brand_id, second_brand_name",
                              [('123', 'Lenovo', '138', 'Meizu'),
                               ('54', 'Doogee', '20', 'Asus')])
+    @pytest.mark.search_field
     def test_product_filter_by_two_brands(before_all_fixture, first_brand_id, first_brand_name, second_brand_id,
                                           second_brand_name, base_url):
         my_url = f"{base_url}/{INNER_URL}"
@@ -163,13 +182,16 @@ class TestParametrizedSearch:
         items_data = before_all_fixture.get(url=my_url, params=payload).json()["items"]
         assert all(list(filter(lambda item: (search_phrase and first_brand_name) or \
                                             (search_phrase and second_brand_name) in item["products"][0]["name"],
-                                            items_data)))
+                               items_data))), \
+            f"{search_phrase} and {first_brand_name} or " \
+            f"{search_phrase} and {second_brand_name} are not in product name"
 
     @staticmethod
     @pytest.mark.parametrize("first_brand_id, first_brand_name, first_model_id, first_model_name, \
                              second_brand_id, second_brand_name, second_model_id, second_model_name",
                              [('123', 'Lenovo', '2654', 'Lenovo Yoga Tablet 2-830',
                                '138', 'Meizu', '12', 'Meizu 16')])
+    @pytest.mark.search_field
     def test_product_filter_by_two_brands_and_two_models(before_all_fixture, first_brand_id, first_brand_name,
                                                          first_model_id, first_model_name,
                                                          second_brand_id, second_brand_name,
@@ -186,12 +208,15 @@ class TestParametrizedSearch:
         items_data = before_all_fixture.get(url=my_url, params=payload).json()["items"]
         assert all(list(filter(lambda item: (search_phrase and first_brand_name and first_model_name) or \
                                             (search_phrase and second_brand_name and second_model_name) in
-                                            item["products"][0]["name"], items_data)))
+                                            item["products"][0]["name"], items_data))), \
+            f"{search_phrase} and {first_brand_name} and {first_model_name} or" \
+            f"{search_phrase} and {second_brand_name} and {second_model_name} are not in product name"
 
     @staticmethod
     @pytest.mark.parametrize("first_brand_id, first_brand_name, second_brand_id, second_brand_name, "
                              "third_brand_id, third_brand_name",
                              [('247', 'Sony', '20', 'Asus', '188', 'ZTE')])
+    @pytest.mark.search_field
     def test_product_filter_by_three_brands(before_all_fixture, first_brand_id, first_brand_name, second_brand_id,
                                             second_brand_name, third_brand_id, third_brand_name, base_url):
         my_url = f"{base_url}/{INNER_URL}"
@@ -207,7 +232,9 @@ class TestParametrizedSearch:
         assert all(list(filter(lambda item: (search_phrase and first_brand_name) or \
                                             (search_phrase and second_brand_name) or \
                                             (search_phrase and third_brand_name) in item["products"][0]["name"],
-                                            items_data)))
+                               items_data))), f"{search_phrase} and {first_brand_name} or" \
+                                              f"{search_phrase} and {second_brand_name} or" \
+                                              f"{search_phrase} and {third_brand_name} are not in product name"
 
     @staticmethod
     @pytest.mark.parametrize("first_brand_id, first_brand_name, first_model_id, first_model_name, \
@@ -216,6 +243,7 @@ class TestParametrizedSearch:
                              [('247', 'Sony', '2099', 'D2302 Xperia M2',
                                '20', 'Asus', '531', 'ZenPad 10',
                                '188', 'ZTE', '2843', 'Blade 20 Smart')])
+    @pytest.mark.search_field
     def test_product_filter_by_three_brands_and_three_models(before_all_fixture, first_brand_id, first_brand_name,
                                                              first_model_id, first_model_name, second_brand_id,
                                                              second_brand_name, second_model_id, second_model_name,
@@ -237,7 +265,10 @@ class TestParametrizedSearch:
         assert all(list(filter(lambda item: (search_phrase and first_brand_name and first_model_name) or \
                                             (search_phrase and second_brand_name and second_model_name) or \
                                             (search_phrase and third_brand_name and third_model_name) in
-                                            item["products"][0]["name"], items_data)))
+                                            item["products"][0]["name"], items_data))), \
+            f"{search_phrase} and {first_brand_name} and {first_model_name} or" \
+            f"{search_phrase} and {second_brand_name} and {second_model_name} or" \
+            f"{search_phrase} and {third_brand_name} and {third_model_name} are not in product name"
 
     @staticmethod
     @pytest.mark.parametrize("search_phrase, category_id",
@@ -251,6 +282,7 @@ class TestParametrizedSearch:
                               ('Заміна підсвітки', '188'),
                               ('Battery GP Lithium', '328'),
                               ('BGA кульки', '160')])
+    @pytest.mark.search_field
     def test_product_filter_by_category(before_all_fixture, category_id, search_phrase, base_url):
         my_url = f"{base_url}/{INNER_URL}"
         json_data = BasePage.get_json_file()
@@ -259,4 +291,5 @@ class TestParametrizedSearch:
         payload['categoryId'] = category_id
         response = before_all_fixture.get(url=my_url, params=payload)
         items_data = response.json()["items"]
-        assert all(list(filter(lambda item: search_phrase in item["products"][0]["name"], items_data)))
+        assert all(list(filter(lambda item: search_phrase in item["products"][0]["name"], items_data))), \
+            f"search phrase {search_phrase} is not in category id {category_id}"
